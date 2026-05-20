@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lokale Audio- und Video-Transkription</title>
+  <meta name="description" content="Browser-only Transkription: Audio oder Video lokal verarbeiten, Audio extrahieren und mit Whisper transkribieren." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="page-shell">
+    <section class="hero card">
+      <div>
+        <p class="eyebrow">Browser-only · Kein Datei-Upload an deinen Server</p>
+        <h1>Lokale Transkription für Audio und Video</h1>
+        <p class="lead">
+          Wähle eine Audio- oder Videodatei aus. Videos werden lokal im Browser zu WAV-Audio extrahiert,
+          anschließend wird die Audiospur lokal mit einem Whisper-Modell transkribiert.
+        </p>
+      </div>
+      <div class="privacy-box">
+        <strong>Datenschutz-Hinweis</strong>
+        <span>Die ausgewählte Medien-Datei bleibt im Browser. Modelle und WASM-Dateien werden beim ersten Start aus dem Internet geladen.</span>
+      </div>
+    </section>
+
+    <section class="card controls">
+      <label class="file-picker" for="mediaInput">
+        <span>Datei auswählen</span>
+        <small>Audio: MP3, WAV, M4A, OGG · Video: MP4, MOV, WEBM · maximal 5 Minuten</small>
+      </label>
+      <input id="mediaInput" type="file" accept="audio/*,video/*,.mp3,.wav,.m4a,.ogg,.mp4,.mov,.webm" />
+
+      <div id="fileMeta" class="file-meta hidden"></div>
+
+      <div class="settings-grid">
+        <label>
+          Modell
+          <select id="modelSelect">
+            <option value="onnx-community/whisper-tiny">whisper-tiny · schneller</option>
+            <option value="onnx-community/whisper-base" selected>whisper-base · ausgewogen</option>
+            <option value="onnx-community/whisper-small">whisper-small · besser, langsamer</option>
+          </select>
+        </label>
+
+        <label>
+          Sprache
+          <select id="languageSelect">
+            <option value="german" selected>Deutsch</option>
+            <option value="english">Englisch</option>
+            <option value="french">Französisch</option>
+            <option value="spanish">Spanisch</option>
+            <option value="italian">Italienisch</option>
+            <option value="auto">Automatisch erkennen</option>
+          </select>
+        </label>
+
+        <label class="checkbox-row">
+          <input id="normalizeAudio" type="checkbox" checked />
+          <span>Audio vor Transkription lokal zu 16 kHz Mono WAV normalisieren</span>
+        </label>
+
+        <label class="checkbox-row">
+          <input id="useWebGpu" type="checkbox" />
+          <span>WebGPU verwenden, falls verfügbar</span>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button id="startButton" type="button" disabled>Transkription starten</button>
+        <button id="downloadTxtButton" type="button" disabled>TXT herunterladen</button>
+        <button id="downloadWavButton" type="button" disabled>extrahiertes WAV herunterladen</button>
+      </div>
+    </section>
+
+    <section class="card progress-card">
+      <h2>Status</h2>
+      <div class="progress-wrap" aria-label="Fortschritt">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+      <pre id="statusLog" class="status-log">Bereit.</pre>
+    </section>
+
+    <section class="card output-card">
+      <div class="output-header">
+        <h2>Transkript</h2>
+        <button id="copyButton" type="button" disabled>Kopieren</button>
+      </div>
+      <textarea id="transcriptOutput" placeholder="Das Transkript erscheint hier…" spellcheck="true"></textarea>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
