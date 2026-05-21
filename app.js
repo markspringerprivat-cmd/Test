@@ -1,28 +1,6 @@
+import { FFmpeg } from "https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js";
+import { fetchFile, toBlobURL } from "https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js";
 import { pipeline, env } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1";
-
-const FFMPEG_MODULE_URL = new URL("./vendor/ffmpeg/index.js", import.meta.url).href;
-const FFMPEG_UTIL_URL = new URL("./vendor/ffmpeg-util/index.js", import.meta.url).href;
-const FFMPEG_CORE_JS_URL = new URL("./vendor/ffmpeg-core/ffmpeg-core.js", import.meta.url).href;
-const FFMPEG_CORE_WASM_URL = new URL("./vendor/ffmpeg-core/ffmpeg-core.wasm", import.meta.url).href;
-
-let FFmpegClass = null;
-let ffmpegFetchFile = null;
-
-async function loadFfmpegModules() {
-  if (FFmpegClass && ffmpegFetchFile) {
-    return { FFmpeg: FFmpegClass, fetchFile: ffmpegFetchFile };
-  }
-
-  const [{ FFmpeg }, { fetchFile }] = await Promise.all([
-    import(FFMPEG_MODULE_URL),
-    import(FFMPEG_UTIL_URL),
-  ]);
-
-  FFmpegClass = FFmpeg;
-  ffmpegFetchFile = fetchFile;
-
-  return { FFmpeg, fetchFile };
-}
 
 const MAX_DURATION_SECONDS = 300;
 const MAX_FILE_SIZE_BYTES = 250 * 1024 * 1024;
@@ -113,7 +91,6 @@ async function loadFfmpeg() {
   if (ffmpeg) return ffmpeg;
 
   log("Lade ffmpeg.wasm für lokale Audio-Extraktion…");
-  const { FFmpeg } = await loadFfmpegModules();
   const instance = new FFmpeg();
 
   instance.on("progress", ({ progress }) => {
@@ -124,9 +101,10 @@ async function loadFfmpeg() {
     if (/error|invalid|failed/i.test(message)) log(`ffmpeg: ${message}`);
   });
 
+  const baseURL = "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd";
   await instance.load({
-    coreURL: FFMPEG_CORE_JS_URL,
-    wasmURL: FFMPEG_CORE_WASM_URL,
+    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
   });
 
   ffmpeg = instance;
@@ -136,7 +114,6 @@ async function loadFfmpeg() {
 
 async function convertToWav(file) {
   const ff = await loadFfmpeg();
-  const { fetchFile } = await loadFfmpegModules();
   const inputName = `input-${Date.now()}-${file.name.replace(/[^a-z0-9.\-_]/gi, "_")}`;
   const outputName = "audio-16khz-mono.wav";
 
