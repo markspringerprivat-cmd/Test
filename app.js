@@ -244,9 +244,10 @@ async function handleFileChange() {
     els.startButton.disabled = false;
     resetLog("Datei geprüft. Transkription kann gestartet werden.");
   } catch (error) {
+    console.error("[handleFileChange] Fehler:", error);
     els.fileMeta.classList.remove("hidden");
-    els.fileMeta.innerHTML = `<strong>Fehler:</strong> ${error.message}`;
-    resetLog(`Fehler: ${error.message}`);
+    els.fileMeta.innerHTML = `<strong>Fehler:</strong> ${error.message ?? String(error)}`;
+    resetLog(`Fehler: ${error.message ?? String(error)}`);
   }
 }
 

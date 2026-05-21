@@ -1,1 +1,1 @@
-import "./ffmpeg/worker.js";
+import "./vendor/ffmpeg/worker.js";
